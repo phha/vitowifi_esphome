@@ -1,0 +1,74 @@
+substitutions:
+  device: viessmann
+  name: Viessmann Optolink
+  version: "0.0.1"
+
+esphome:
+  name: ${device}
+  platform: ESP32
+  board: nodemcu-32s
+  includes:
+    - custom_components/optolink
+  libraries:
+    - VitoWiFi
+
+custom_component:
+  - lambda: |-
+      return {boiler};
+
+# Settings for Wifi, Web Server, API, etc
+# Not shown for this example, substitue with your own
+<<: !include common/common.yaml
+
+sensor:
+  - platform: custom
+    lambda: |-
+      return {
+          boiler->sensor_outside_temp,
+          boiler->sensor_boiler_temp,
+          boiler->sensor_speicher_temp,
+          boiler->sensor_raum_soll_temp
+        };
+    sensors:
+      - name: ${name} outside temperature
+        unit_of_measurement: °C
+        accuracy_decimals: 1
+        filters:
+          - multiply: 0.1
+      - name: ${name} boiler temperature
+        unit_of_measurement: °C
+        accuracy_decimals: 1
+        filters:
+          - multiply: 0.1
+      - name: ${name} Speicher temperature
+        unit_of_measurement: °C
+        accuracy_decimals: 1
+        filters:
+          - multiply: 0.1
+      - name: ${name} Raum soll temperature
+        unit_of_measurement: °C
+        accuracy_decimals: 1
+        filters:
+          - multiply: 0.1
+
+binary_sensor:
+  - platform: custom
+    lambda: |-
+      return {
+          boiler->sensor_brenner_status,
+          boiler->sensor_sparbetrieb,
+          boiler->sensor_partybetrieb
+        };
+    binary_sensors:
+      - name: ${name} Brenner status
+        device_class: heat
+      - name: ${name} Sparbetrieb
+      - name: ${name} Partybetrieb
+
+text_sensor:
+  - platform: custom
+    lambda: |-
+      return {boiler->sensor_betriebsart};
+    text_sensors:
+      - name: ${name} Betriebsart
+        icon: mdi:radiator
